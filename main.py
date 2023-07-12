@@ -53,7 +53,7 @@ def get_morning_greet():
     print('获取早安问候语..')
 
     # 生成10以内的随机数
-    random_num = random.randint(0, morning_greets.__len__())
+    random_num = random.randint(0, len(morning_greets))
     return morning_greets[random_num]
 
 # 获取格言信息
@@ -120,7 +120,7 @@ def get_weather_info(city_code=''):
 def create_morning1():
     morning_greet = get_morning_greet()
     # 写入文件
-    with open('./dist/morning1.md', 'w', encoding='utf-8') as f:
+    with open('./dist/morning1.txt', 'w', encoding='utf-8') as f:
         f.write(morning_greet)
 
 
@@ -144,7 +144,7 @@ def create_morning2():
 
     # f'今天是我们恋爱的第{}天' +\
     # f'距离亲爱的生日还有{}天' +\
-    with open('./dist/morning2.md', 'w', encoding='utf-8') as f:
+    with open('./dist/morning2.txt', 'w', encoding='utf-8') as f:
         f.write(msg)
 
 
