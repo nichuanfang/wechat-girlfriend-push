@@ -34,7 +34,7 @@ week_dict: dict[int, str] = {
 
 morning_greets = ['早上好呀 今天也是元气满满的一天哦！',
                   '小才女 早上好!',
-                  '找安 crush!',
+                  '早安呀 crush',
                   '早安 宝☀☀',
                   '长得帅的先说早 早早早',
                   '早鸭',
