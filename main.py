@@ -189,9 +189,6 @@ def create_morning(love_days, birthday_days):
 
 
 if __name__ == '__main__':
-    morning_greeting = get_morning_greet()
-    with open('./dist/morning_greeting.txt', 'w+', encoding='utf-8') as f:
-        f.write(morning_greeting)
     love_days = diff_love_days()
     birthday_days = diff_birthday_days()
     create_morning(love_days, birthday_days)
