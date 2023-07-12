@@ -47,7 +47,7 @@ morning_greets = ['早上好呀 今天也是元气满满的一天哦！',
                   f'早呀 今天是七天中难得一遇的星期{week_dict[weekday]}耶',
                   '中国14亿人我只跟你说早安哦 臭宝~',
                   '早上好',
-                  '早安啊才女',
+                  '早安啊小才女',
                   '宝宝 早早早',
                   '早安 小美女',
                   '早早早呀仙女',
@@ -170,13 +170,13 @@ def create_morning(love_days, birthday_days):
         f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
         f'{get_ciba_info()}\n\n'
 
-    with open('./dist/morning.txt', 'w', encoding='utf-8') as f:
+    with open('./dist/morning.txt', 'w+', encoding='utf-8') as f:
         f.write(msg)
 
 
 if __name__ == '__main__':
     morning_greeting = get_morning_greet()
-    with open('./dist/morning_greeting.txt', 'w', encoding='utf-8') as f:
+    with open('./dist/morning_greeting.txt', 'w+', encoding='utf-8') as f:
         f.write(morning_greeting)
     love_days = diff_love_days()
     birthday_days = diff_birthday_days()
