@@ -1,15 +1,26 @@
 #!/usr/local/bin/python3
 # coding=utf-8
-from re import S
 from bs4 import BeautifulSoup
 import requests
 import random
-import datetime
 from city_dict import city_dict
+import datetime as dt
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 # 生成每日问候 (dist文件夹)
-today = datetime.date.today()
-weekday = today.weekday()
+
+SHA_TZ = timezone(
+    timedelta(hours=8),
+    name='Asia/Shanghai',
+)
+
+utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+beijing_now = utc_now.astimezone(SHA_TZ)
+
+weekday = beijing_now.weekday()
 week_dict: dict[int, str] = {
     0: '一',
     1: '二',
@@ -17,7 +28,7 @@ week_dict: dict[int, str] = {
     3: '四',
     4: '五',
     5: '六',
-    6: '日'
+    6: '天'
 }
 
 morning_greets = ['早上好呀 今天也是元气满满的一天哦！',
@@ -40,7 +51,8 @@ morning_greets = ['早上好呀 今天也是元气满满的一天哦！',
                   '早安 小美女',
                   '早早早呀仙女',
                   '早上好呀宝',
-                  '起床啦~ 汇报一下 今天也很喜欢你❤']
+                  '起床啦~ 汇报一下 今天也很喜欢你❤',
+                  '美好的一天开始啦~']
 
 # 早安问候
 
@@ -53,7 +65,7 @@ def get_morning_greet():
     print('获取早安问候语..')
 
     # 生成10以内的随机数
-    random_num = random.randint(0, len(morning_greets))
+    random_num = random.randint(0, len(morning_greets)-1)
     return morning_greets[random_num]
 
 # 获取格言信息
@@ -117,21 +129,34 @@ def get_weather_info(city_code=''):
         return today_weather
 
 
-def create_morning1():
+def diff_love_days():
+    '''
+    计算恋爱天数
+    '''
+    date1 = dt.datetime(
+        beijing_now.year, beijing_now.month, beijing_now.day)
+    date2 = dt.datetime(2023, 3, 20)
+    return (date1-date2).days
+
+
+def diff_birthday_days():
+    '''
+    计算生日天数
+    '''
+    date1 = dt.datetime(beijing_now.year, beijing_now.month, beijing_now.day)
+    date2 = dt.datetime(beijing_now.year+1, 3, 19)
+    return (date2-date1).days
+
+
+def create_morning(love_days, birthday_days):
     morning_greet = get_morning_greet()
-    # 写入文件
-    with open('./dist/morning1.txt', 'w', encoding='utf-8') as f:
-        f.write(morning_greet)
-
-
-def create_morning2():
     weather_info: dict = get_weather_info(city_dict['武汉'])  # type: ignore
     # 获取格式化日期
-    date = datetime.datetime.now().strftime(
+    date = beijing_now.strftime(
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
 
-    msg = f'美好的一天开始啦~\n' + \
-        f'{today.month}月{today.day}日 \n\n' +\
+    msg = f'{get_dictum_info()}\n' + \
+        f'{beijing_now.month}月{beijing_now.day}日 \n\n' +\
         f'{date}\n' +\
         f'地区: 武汉市\n' +\
         f'天气: {weather_info["type"]}\n' +\
@@ -139,20 +164,19 @@ def create_morning2():
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
         f'空气质量: {weather_info["aqi"]}\n' +\
-        f'温馨提示: {weather_info["notice"]}\n\n' +\
-        f'每日一句: {get_ciba_info()}\n\n'
+        f'温馨提示: {weather_info["notice"]}~\n\n' +\
+        f'今天是我们恋爱的第【{love_days}】天\n' +\
+        f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
+        f'{get_ciba_info()}\n\n'
 
-    # f'今天是我们恋爱的第{}天' +\
-    # f'距离亲爱的生日还有{}天' +\
-    with open('./dist/morning2.txt', 'w', encoding='utf-8') as f:
+    with open('./dist/morning.txt', 'w', encoding='utf-8') as f:
         f.write(msg)
 
 
 if __name__ == '__main__':
-    know_days = 10
-    love_days = 100
-    birthday_days = 10
-
-    create_morning1()
-    create_morning2()
-    pass
+    morning_greeting = get_morning_greet()
+    with open('./dist/morning_greeting.txt', 'w', encoding='utf-8') as f:
+        f.write(morning_greeting)
+    love_days = diff_love_days()
+    birthday_days = diff_birthday_days()
+    create_morning(love_days, birthday_days)

@@ -1,0 +1,40 @@
+name: Generate everyday greet
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      tags:
+        description: ''
+
+jobs:
+  job1:
+    name: 生成每日问候
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: prepare python environment(v3.11)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: pip install
+        run: pip install -r requirements.txt
+
+      - name: execute
+        run: |
+          python main.py
+
+      - name: git commit
+        uses: Smart-Transportation/push@v1.3
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          branch: 'main'
+          author_email: 'f18326186224@gmail.com'
+          author_name: 'nichuanfang'
+          message: '🐳 chore: 生成每日女友问候'
