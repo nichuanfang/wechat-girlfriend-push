@@ -9,6 +9,9 @@ import datetime as dt
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
+from chinese_calendar import is_holiday, is_workday
+import chinese_calendar
+
 
 # 生成每日问候 (dist文件夹)
 
@@ -22,6 +25,18 @@ utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 beijing_now = utc_now.astimezone(SHA_TZ)
 
 weekday = beijing_now.weekday()
+
+# 是否法定节假日
+
+holiday_flag = '否'
+festival_name = '无'
+
+is_holi = is_holiday(beijing_now.date())
+if is_holi:
+    holiday_flag = '是'
+    holi_detail = chinese_calendar.get_holiday_detail(beijing_now.date())
+    if holi_detail[0] and holi_detail[1]:
+        festival_name = holi_detail[1]
 week_dict: dict[int, str] = {
     0: '一',
     1: '二',
@@ -157,8 +172,10 @@ def create_morning(love_days, birthday_days):
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
 
     msg = f'{get_dictum_info()}\n' + \
-        f'{beijing_now.month}月{beijing_now.day}日 \n\n' +\
+        f'宝贝,今天是我们恋爱的第【{love_days}】天,距离亲爱的生日还有【{birthday_days}】天哦~\n\n' +\
         f'{date}\n' +\
+        f'法定节假日: 【{holiday_flag}】\n' +\
+        f'节日: 【{festival_name}】\n' +\
         f'地区: 武汉市\n' +\
         f'天气: {weather_info["type"]}\n' +\
         f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
@@ -166,8 +183,6 @@ def create_morning(love_days, birthday_days):
         f'风力: {weather_info["fl"]}\n' +\
         f'空气质量: {weather_info["aqi"]}\n' +\
         f'温馨提示: {weather_info["notice"]}~\n\n' +\
-        f'今天是我们恋爱的第【{love_days}】天\n' +\
-        f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
         f'{get_ciba_info()}\n\n'
 
     with open('./dist/morning.txt', 'w+', encoding='utf-8') as f:
