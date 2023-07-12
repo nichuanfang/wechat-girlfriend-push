@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 # coding=utf-8
 from bs4 import BeautifulSoup
+import lxml
 import requests
 import random
 from city_dict import city_dict
