@@ -172,7 +172,8 @@ def create_morning(love_days, birthday_days):
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
 
     msg = f'{get_dictum_info()}\n' + \
-        f'宝贝,今天是我们恋爱的第【{love_days}】天,距离亲爱的生日还有【{birthday_days}】天哦~\n\n' +\
+        f'今天是我们恋爱的第【{love_days}】天\n' +\
+        f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
         f'{date}\n' +\
         f'法定节假日: 【{holiday_flag}】\n' +\
         f'节日: 【{festival_name}】\n' +\
