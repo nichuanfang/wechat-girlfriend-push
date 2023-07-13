@@ -68,7 +68,20 @@ morning_greets = ['早上好呀 今天也是元气满满的一天哦',
                   '起床啦~ 汇报一下 今天也很喜欢你❤',
                   '美好的一天开始啦']
 
-# 早安问候
+constellation_dict = {
+    "水瓶座": "Aquarius",
+    "双鱼座": "Pisces",
+    "白羊座": "Aries",
+    "金牛座": "Taurus",
+    "双子座": "Gemini",
+    "巨蟹座": "Cancer",
+    "狮子座": "Leo",
+    "处女座": "Virgo",
+    "天秤座": "Libra",
+    "天蝎座": "Scorpio",
+    "射手座": "Sagittarius",
+    "摩羯座": "Capricorn"
+}
 
 
 def get_morning_greet():
@@ -162,9 +175,61 @@ def diff_birthday_days():
     return (date2-date1).days
 
 
+def get_star_icon(stars):
+    if stars == 0:
+        return '☆☆☆☆☆'
+    elif stars == 1:
+        return '★☆☆☆☆'
+    elif stars == 2:
+        return '★★☆☆☆'
+    elif stars == 3:
+        return '★★★☆☆'
+    elif stars == 4:
+        return '★★★★☆'
+    elif stars == 5:
+        return '★★★★★'
+
+
+def get_constellation_info(constellation_name):
+    '''
+    从星座屋中获取星座运势
+    :param constellation_name: 星座名称
+    :return:
+    '''
+    print('获取星座运势..')
+    res = {}
+    user_url = f'http://www.xzw.com/fortune/{constellation_dict[constellation_name]}'
+    resp = requests.get(user_url)
+    soup_texts = BeautifulSoup(resp.text, 'lxml')
+    fortune = soup_texts.find_all('dd')[1].contents[1].contents
+
+    # 综合运势
+    comprehensive_stars = int(fortune[0].contents[1].contents[0]
+                              ['style'].split(':')[1][:-3])/16
+    comprehensive_stars_icon = get_star_icon(comprehensive_stars)
+    # 事业学业
+    study_stars = int(fortune[2].contents[1].contents[0]
+                      ['style'].split(':')[1][:-3])/16
+    study_stars_icon = get_star_icon(study_stars)
+    # 幸运数字
+    lucky_num = fortune[7].contents[1]
+    # 幸运颜色
+    lucky_color = fortune[6].contents[1]
+    # 短评
+    short_comment = fortune[9].contents[1]
+
+    res['comprehensive_stars_icon'] = comprehensive_stars_icon
+    res['study_stars_icon'] = study_stars_icon
+    res['lucky_num'] = lucky_num
+    res['lucky_color'] = lucky_color
+    res['short_comment'] = short_comment
+    return res
+
+
 def create_morning(love_days, birthday_days):
     morning_greet = get_morning_greet()
     weather_info: dict = get_weather_info(city_dict['武汉'])  # type: ignore
+    constellation_info = get_constellation_info('双鱼座')
     # 获取格式化日期
     date = beijing_now.strftime(
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
@@ -172,6 +237,7 @@ def create_morning(love_days, birthday_days):
     msg = f'{morning_greet}~\n' + \
         f'今天是我们恋爱的第【{love_days}】天\n' +\
         f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
+        f'⭐⭐今日简报⭐⭐\n' +\
         f'{date}\n' +\
         f'法定节假日: 【{holiday_flag}】\n' +\
         f'节日: 【{festival_name}】\n' +\
@@ -182,6 +248,13 @@ def create_morning(love_days, birthday_days):
         f'风力: {weather_info["fl"]}\n' +\
         f'空气质量: {weather_info["aqi"]}\n' +\
         f'温馨提示: {weather_info["notice"]}~\n\n' +\
+        f'⭐⭐双鱼座今日运势⭐⭐\n' +\
+        f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
+        f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
+        f'幸运数字: {constellation_info["lucky_num"]}\n' +\
+        f'幸运颜色: {constellation_info["lucky_color"]}\n' +\
+        f'短评: {constellation_info["short_comment"]}\n\n' +\
+        f'⭐⭐每日一句⭐⭐\n' +\
         f'{get_ciba_info()}\n\n'
 
     with open('./dist/morning.txt', 'w+', encoding='utf-8') as f:
