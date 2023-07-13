@@ -11,7 +11,11 @@ from datetime import timedelta
 from datetime import timezone
 from chinese_calendar import is_holiday, is_workday
 import chinese_calendar
-
+from zhdate import ZhDate
+import json
+import urllib
+from urllib import parse
+from urllib import request
 
 # 生成每日问候 (dist文件夹)
 
@@ -23,6 +27,10 @@ SHA_TZ = timezone(
 utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
 beijing_now = utc_now.astimezone(SHA_TZ)
+
+# 计算农历
+nongli_date = ZhDate.from_datetime(
+    datetime(beijing_now.year, beijing_now.month, beijing_now.day))
 
 weekday = beijing_now.weekday()
 
@@ -226,14 +234,62 @@ def get_constellation_info(constellation_name):
     return res
 
 
+def get_good_and_evil():
+    """吉凶宜忌
+
+    Returns:
+        _type_: _description_
+    """
+    url = 'http://v.juhe.cn/laohuangli/d'
+
+    paramas = {
+        "key": "21cb6fe53b58a27e4718aa0459167974",  # 您申请的接口API接口请求Key
+        "date": beijing_now.strftime(
+            '%Y-%m-%d')  # 日期，格式2020-11-24
+    }
+    querys = urllib.parse.urlencode(paramas).encode(  # type: ignore
+        encoding='UTF8')  # type: ignore
+
+    request = urllib.request.Request(url, data=querys)  # type: ignore
+    response = urllib.request.urlopen(request)  # type: ignore
+    content = response.read()
+    if (content):
+        try:
+            result = json.loads(content)
+            error_code = result['error_code']
+            if (error_code == 0):
+                return result['result']
+            else:
+                print("请求失败：%s:%s" % (result['error_code'], result['reason']))
+        except Exception as e:
+            print('解析结果异常：%s' % e)
+    else:
+        #  可能网络异常等问题，无法获取返回内容，请求异常
+        print("请求异常")
+        pass
+
+
 def create_morning(love_days, birthday_days):
+    # 早安问候
     morning_greet = get_morning_greet()
+    # 天气信息
     weather_info: dict = get_weather_info(city_dict['蔡甸区'])  # type: ignore
+    # 星座运势
     constellation_info = get_constellation_info('双鱼座')
+    # 吉凶宜忌
+    good_evil = get_good_and_evil()
+    if good_evil:
+        good = good_evil['yi']
+        evil = good_evil['ji']
+    else:
+        good = '无'
+        evil = '无'
+
     # 获取格式化日期
     date = beijing_now.strftime(
-        '%Y-%m-%d')+' 星期'+week_dict[weekday]
+        '%Y-%m-%d')+' 星期'+week_dict[weekday] + f' {nongli_date}'
 
+    # 构建微信消息
     msg = f'{morning_greet}~\n' + \
         f'今天是我们恋爱的第【{love_days}】天\n' +\
         f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
@@ -254,6 +310,9 @@ def create_morning(love_days, birthday_days):
         f'幸运数字: {constellation_info["lucky_num"]}\n' +\
         f'幸运颜色: {constellation_info["lucky_color"]}\n' +\
         f'短评: {constellation_info["short_comment"]}\n\n' +\
+        f'⭐⭐吉凶宜忌⭐⭐\n' +\
+        f'宜: {good}\n' +\
+        f'忌: {evil}\n\n' +\
         f'⭐⭐每日一句⭐⭐\n' +\
         f'{get_ciba_info()}\n\n'
 
