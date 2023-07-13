@@ -1,5 +1,7 @@
 #!/usr/local/bin/python3
 # coding=utf-8
+from calendar import c
+from time import time, localtime
 from bs4 import BeautifulSoup
 import lxml
 import requests
@@ -10,6 +12,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from chinese_calendar import is_holiday, is_workday
+from requests.api import get
 import chinese_calendar
 from zhdate import ZhDate
 import json
@@ -74,7 +77,15 @@ morning_greets = ['早上好呀 今天也是元气满满的一天哦',
                   '早早早呀仙女',
                   '早上好呀宝',
                   '起床啦~ 汇报一下 今天也很喜欢你❤',
-                  '美好的一天开始啦']
+                  '美好的一天开始啦',
+                  '早上好 打工人',
+                  '早安 打工人',
+                  '起床啦 打工人',
+                  '早上好呀 打工人',
+                  '早安呀 打工人',
+                  '早呀 打工人',
+                  '早早早',
+                  '早上好呀']
 
 constellation_dict = {
     "水瓶座": "Aquarius",
@@ -151,17 +162,60 @@ def get_lovelive_info():
         print('每日一句获取失败')
         return None
 
-# 获取每日天气
-
 
 def get_weather_info(city_code=''):
+    """获取每日天气
+
+    Args:
+        city_code (str, optional): _description_. Defaults to ''.
+
+    Returns:
+        _type_: _description_
+    """
     weather_url = f'http://t.weather.sojson.com/api/weather/city/{city_code}'
     resp = requests.get(url=weather_url)
     if resp.status_code == 200 and resp.json().get('status') == 200:
         weatherJson = resp.json()
         # 今日天气
-        today_weather = weatherJson.get('data').get('forecast')[0]
-        return today_weather
+        today_weathers = weatherJson.get('data').get('forecast')
+        for today_weather in today_weathers:
+            if today_weather.get('ymd') == beijing_now.strftime('%Y-%m-%d'):
+                return today_weather
+
+
+def get_weather_assistant_info():
+    '''
+    获取天气小助手信息  101200102001  湖北省 武汉市 蔡甸区 蔡甸街道
+    '''
+    res = {}
+    url = 'http://forecast.weather.com.cn/town/weathern/101200102001.shtml'
+    resp = requests.get(url=url)
+    if resp.status_code == 200:
+        soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')
+        shzsSevenDays = soup.find_all('div', class_='shzsSevenDay')[
+            0].contents[1].contents
+        count = 0
+        for shzsSevenDay in shzsSevenDays:
+            if shzsSevenDay == '\n':
+                continue
+            if shzsSevenDay.contents[0] == beijing_now.strftime('%m-%d'):
+                break
+            count += 1
+        # 循环结束  count表示第几个元素是目标div
+
+        # 定位目标div
+        lv = soup.find_all('div', class_='lv')[count]
+
+        # 紫外线
+        res['uv'] = lv.contents[1].contents[3].text.replace('。', '')
+        # 穿衣
+        res['dress'] = lv.contents[5].contents[3].text.replace('。', '')
+        # 空气污染扩散
+        res['air_pollution'] = lv.contents[11].contents[3].text.replace(
+            '。', '')
+        return res
+    else:
+        return res
 
 
 def diff_love_days():
@@ -274,6 +328,8 @@ def create_morning(love_days, birthday_days):
     morning_greet = get_morning_greet()
     # 天气信息
     weather_info: dict = get_weather_info(city_dict['蔡甸区'])  # type: ignore
+    # 获取天气助手信息
+    weather_assistant_info = get_weather_assistant_info()
     # 星座运势
     constellation_info = get_constellation_info('双鱼座')
     # 吉凶宜忌
@@ -302,8 +358,9 @@ def create_morning(love_days, birthday_days):
         f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
-        f'空气质量: {weather_info["aqi"]}\n' +\
-        f'温馨提示: {weather_info["notice"]}~\n\n' +\
+        f'紫外线: {weather_assistant_info["uv"]}\n' +\
+        f'空气污染扩散: {weather_assistant_info["air_pollution"]}\n' +\
+        f'穿衣: {weather_assistant_info["dress"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
