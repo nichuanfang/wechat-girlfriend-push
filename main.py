@@ -375,7 +375,7 @@ def create_morning(love_days, birthday_days):
         f'节日: 【{festival_name}】\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {weather_info["type"]}\n' +\
-        f'气温: 【{weather_assistant_info["dress_level"]}】{weather_info["low"]} ~ {weather_info["high"]}\n' +\
+        f'气温: 【{weather_assistant_info["dress_level"]}】{weather_info["low"].replace("低温", "")} ~ {weather_info["high"].replace("高温", "")}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
         f'紫外线: {weather_assistant_info["uv_level"]}\n' +\
