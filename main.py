@@ -211,11 +211,14 @@ def get_weather_assistant_info():
         lv = soup.find_all('div', class_='lv')[count]
 
         # 紫外线
-        res['uv'] = lv.contents[1].contents[3].text.replace('。', '')
+        res['uv'] = lv.contents[1].contents[1].text.replace(
+            '\n', '')+','+lv.contents[1].contents[3].text.replace('。', '')
         # 穿衣
-        res['dress'] = lv.contents[5].contents[3].text.replace('。', '')
+        res['dress'] = lv.contents[5].contents[1].text.replace(
+            '\n', '')+','+lv.contents[5].contents[3].text.replace('。', '')
         # 空气污染扩散
-        res['air_pollution'] = lv.contents[11].contents[3].text.replace(
+        res['air_pollution'] = lv.contents[11].contents[1].text.replace(
+            '\n', '')+','+lv.contents[11].contents[3].text.replace(
             '。', '')
         return res
     else:
