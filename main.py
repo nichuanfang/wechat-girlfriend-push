@@ -287,7 +287,7 @@ def create_morning(love_days, birthday_days):
 
     # 获取格式化日期
     date = beijing_now.strftime(
-        '%Y-%m-%d')+' 星期'+week_dict[weekday] + f' {nongli_date}'
+        '%Y-%m-%d')+' 星期'+week_dict[weekday]
 
     # 构建微信消息
     msg = f'{morning_greet}~\n' + \
@@ -311,6 +311,7 @@ def create_morning(love_days, birthday_days):
         f'幸运颜色: {constellation_info["lucky_color"]}\n' +\
         f'短评: {constellation_info["short_comment"]}\n\n' +\
         f'⭐⭐吉凶宜忌⭐⭐\n' +\
+        f'{nongli_date}\n' +\
         f'宜: 【{good}】\n' +\
         f'忌: 【{evil}】\n\n' +\
         f'⭐⭐每日一句⭐⭐\n' +\
