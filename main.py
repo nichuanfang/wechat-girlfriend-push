@@ -311,8 +311,8 @@ def create_morning(love_days, birthday_days):
         f'幸运颜色: {constellation_info["lucky_color"]}\n' +\
         f'短评: {constellation_info["short_comment"]}\n\n' +\
         f'⭐⭐吉凶宜忌⭐⭐\n' +\
-        f'宜: {good}\n' +\
-        f'忌: {evil}\n\n' +\
+        f'宜: 【{good}】\n' +\
+        f'忌: 【{evil}】\n\n' +\
         f'⭐⭐每日一句⭐⭐\n' +\
         f'{get_ciba_info()}\n\n'
 
