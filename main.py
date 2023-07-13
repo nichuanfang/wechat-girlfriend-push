@@ -194,37 +194,47 @@ def get_weather_assistant_info():
     res = {}
     url = 'http://forecast.weather.com.cn/town/weathern/101200102001.shtml'
     resp = requests.get(url=url)
-    if resp.status_code == 200:
-        soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')
-        shzsSevenDays = soup.find_all('div', class_='shzsSevenDay')[
-            0].contents[1].contents
-        count = 0
-        for shzsSevenDay in shzsSevenDays:
-            if shzsSevenDay == '\n':
-                continue
-            if shzsSevenDay.contents[0] == beijing_now.strftime('%m-%d'):
-                break
-            count += 1
-        # 循环结束  count表示第几个元素是目标div
+    try:
+        if resp.status_code == 200:
+            soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')
+            shzsSevenDays = soup.find_all('div', class_='shzsSevenDay')[
+                0].contents[1].contents
+            count = 0
+            for shzsSevenDay in shzsSevenDays:
+                if shzsSevenDay == '\n':
+                    continue
+                if shzsSevenDay.contents[0] == beijing_now.strftime('%m-%d'):
+                    break
+                count += 1
+            # 循环结束  count表示第几个元素是目标div
 
-        # 定位目标div
-        lv = soup.find_all('div', class_='lv')[count]
+            # 定位目标div
+            lv = soup.find_all('div', class_='lv')[count]
 
-        # 紫外线
-        uv_level = lv.contents[1].contents[1].text.replace(
-            '\n', '')
-        res['uv'] = lv.contents[1].contents[3].text.replace('。', '')
-        # 穿衣
-        dress_level = lv.contents[5].contents[1].text.replace(
-            '\n', '')
-        res['dress'] = lv.contents[5].contents[3].text.replace('。', '')
-        # 空气污染扩散
-        air_pollution_level = lv.contents[11].contents[1].text.replace(
-            '\n', '')
-        res['air_pollution'] = lv.contents[11].contents[3].text.replace(
-            '。', '')
-        return res
-    else:
+            # 紫外线
+            uv_level = lv.contents[1].contents[1].text.replace(
+                '\n', '')
+            res['uv_level'] = uv_level
+            # 穿衣
+            dress_level = lv.contents[5].contents[1].text.replace(
+                '\n', '')
+            res['dress_level'] = dress_level
+            # 空气污染扩散
+            air_pollution_level = lv.contents[11].contents[1].text.replace(
+                '\n', '')
+            res['air_pollution_level'] = air_pollution_level
+            # 温馨提示
+            res['notice'] = lv.contents[1].contents[3].text.replace(
+                '。', '')+'，'+lv.contents[5].contents[3].text.replace('。', '')
+            return res
+        else:
+            return res
+    except Exception as e:
+        print('获取天气小助手信息失败')
+        res['uv_level'] = '无'
+        res['dress_level'] = '无'
+        res['air_pollution_level'] = '无'
+        res['notice'] = '无'
         return res
 
 
@@ -365,12 +375,12 @@ def create_morning(love_days, birthday_days):
         f'节日: 【{festival_name}】\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {weather_info["type"]}\n' +\
-        f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
+        f'气温: 【{weather_assistant_info["dress_level"]}】{weather_info["low"]} ~ {weather_info["high"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
-        f'紫外线: {weather_assistant_info["uv"]}\n' +\
-        f'空气污染扩散: {weather_assistant_info["air_pollution"]}\n' +\
-        f'穿衣: {weather_assistant_info["dress"]}\n\n' +\
+        f'紫外线: {weather_assistant_info["uv_level"]}\n' +\
+        f'空气污染扩散: {weather_assistant_info["air_pollution_level"]}\n' +\
+        f'温馨提示: {weather_assistant_info["notice"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
