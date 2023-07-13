@@ -228,7 +228,7 @@ def get_constellation_info(constellation_name):
 
 def create_morning(love_days, birthday_days):
     morning_greet = get_morning_greet()
-    weather_info: dict = get_weather_info(city_dict['武汉'])  # type: ignore
+    weather_info: dict = get_weather_info(city_dict['蔡甸区'])  # type: ignore
     constellation_info = get_constellation_info('双鱼座')
     # 获取格式化日期
     date = beijing_now.strftime(
@@ -241,7 +241,7 @@ def create_morning(love_days, birthday_days):
         f'{date}\n' +\
         f'法定节假日: 【{holiday_flag}】\n' +\
         f'节日: 【{festival_name}】\n' +\
-        f'地区: 武汉市\n' +\
+        f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {weather_info["type"]}\n' +\
         f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
