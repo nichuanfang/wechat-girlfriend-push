@@ -314,7 +314,6 @@ def create_morning(love_days, birthday_days):
         f'{nongli_date}\n' +\
         f'宜: 【{good}】\n' +\
         f'忌: 【{evil}】\n\n' +\
-        f'⭐⭐每日一句⭐⭐\n' +\
         f'{get_ciba_info()}\n\n'
 
     with open('./dist/morning.txt', 'w+', encoding='utf-8') as f:
