@@ -185,7 +185,11 @@ def get_weather_info(city_code=''):
 
 def get_weather_assistant_info():
     '''
-    获取天气小助手信息  101200102001  湖北省 武汉市 蔡甸区 蔡甸街道
+    获取天气小助手信息    根据需要切换code 来更新小助手
+    101200102001  湖北省 武汉市 蔡甸区 蔡甸街道
+    101201701 湖北省 潜江市 城区
+    101221501 安徽省 六安市
+    101220101 安徽省 合肥市 
     '''
     res = {}
     url = 'http://forecast.weather.com.cn/town/weathern/101200102001.shtml'
