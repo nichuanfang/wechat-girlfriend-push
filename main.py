@@ -213,17 +213,15 @@ def get_weather_assistant_info():
         # 紫外线
         uv_level = lv.contents[1].contents[1].text.replace(
             '\n', '')
-        res['uv'] = f'【{uv_level}】' + \
-            lv.contents[1].contents[3].text.replace('。', '')
+        res['uv'] = lv.contents[1].contents[3].text.replace('。', '')
         # 穿衣
         dress_level = lv.contents[5].contents[1].text.replace(
             '\n', '')
-        res['dress'] = f'【{dress_level}】' + \
-            lv.contents[5].contents[3].text.replace('。', '')
+        res['dress'] = lv.contents[5].contents[3].text.replace('。', '')
         # 空气污染扩散
         air_pollution_level = lv.contents[11].contents[1].text.replace(
             '\n', '')
-        res['air_pollution'] = f'【{air_pollution_level}】'+lv.contents[11].contents[3].text.replace(
+        res['air_pollution'] = lv.contents[11].contents[3].text.replace(
             '。', '')
         return res
     else:
