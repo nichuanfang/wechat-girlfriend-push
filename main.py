@@ -21,6 +21,18 @@ from urllib import parse
 from urllib import request
 from fake_useragent import UserAgent
 import random
+import sys
+
+# 获取环境变量
+
+# 告白日 形如xxxx-xx-xx
+LOVE_DAY = sys.argv[1]
+# 女朋友生日  形如x.xx
+BIRTHDAY = sys.argv[2]
+# 女朋友星座(中文)
+CONSTELLATION = sys.argv[3]
+# 女朋友目前所在地(中文)   只支持city_dict中收录的地区
+AREA = sys.argv[4]
 
 # 生成每日问候 (dist文件夹)
 
@@ -237,8 +249,19 @@ def get_weather_info(city_code):
         '\n', '')
     res['air_pollution_level'] = air_pollution_level
     # 温馨提示
-    res['notice'] = '【'+lv.contents[1].contents[3].text.replace(
-        '。', '')+'，'+lv.contents[3].contents[3].text.replace('。', '')+'，'+lv.contents[7].contents[3].text.replace('。', '')+'】'
+
+    # 紫外线提示
+    res['uv_notice'] = lv.contents[1].contents[3].text.replace(
+        '。', '')
+    # 穿衣提示
+    res['dress_notice'] = lv.contents[7].contents[3].text.replace('。', '')
+
+    # 运动提示
+    res['sport_notice'] = lv.contents[3].contents[3].text.replace('。', '')
+
+    # 过敏提示
+    res['allergy_notice'] = lv.contents[5].contents[3].text.replace('。', '')
+
     return res
 
 
@@ -248,7 +271,9 @@ def diff_love_days():
     '''
     date1 = dt.datetime(
         beijing_now.year, beijing_now.month, beijing_now.day)
-    date2 = dt.datetime(2023, 3, 20)
+    love_day_ele = LOVE_DAY.split('-')
+    date2 = dt.datetime(int(love_day_ele[0]), int(
+        love_day_ele[1]), int(love_day_ele[2]))
     return (date1-date2).days
 
 
@@ -257,7 +282,9 @@ def diff_birthday_days():
     计算生日天数
     '''
     date1 = dt.datetime(beijing_now.year, beijing_now.month, beijing_now.day)
-    date2 = dt.datetime(beijing_now.year+1, 3, 19)
+    birthday_ele = BIRTHDAY.split('.')
+    date2 = dt.datetime(beijing_now.year+1,
+                        int(birthday_ele[0]), int(birthday_ele[1]))
     return (date2-date1).days
 
 
@@ -351,9 +378,9 @@ def create_morning(love_days, birthday_days):
     # 早安问候
     morning_greet = get_morning_greet()
     # 天气信息
-    weather_info: dict = get_weather_info(city_dict['蔡甸区'])  # type: ignore
+    weather_info: dict = get_weather_info(city_dict[AREA])  # type: ignore
     # 星座运势
-    constellation_info = get_constellation_info('双鱼座')
+    constellation_info = get_constellation_info(CONSTELLATION)
     # 吉凶宜忌
     good_evil = get_good_and_evil()
     if good_evil:
@@ -369,20 +396,24 @@ def create_morning(love_days, birthday_days):
 
     # 构建微信消息
     msg = f'{morning_greet}~\n' + \
-        f'今天是我们恋爱的第【{love_days}】天\n' +\
-        f'距离亲爱的生日还有【{birthday_days}】天\n\n' +\
+        f'今天是我们恋爱的第{love_days}天\n' +\
+        f'距离亲爱的生日还有{birthday_days}天\n\n' +\
         f'⭐⭐今日简报⭐⭐\n' +\
         f'{date}\n' +\
-        f'法定节假日: 【{holiday_flag}】\n' +\
-        f'节日: 【{festival_name}】\n' +\
+        f'法定节假日: {holiday_flag}\n' +\
+        f'节日: {festival_name}\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {weather_info["weather"]}\n' +\
-        f'气温: 【{weather_info["dress_level"]}】{weather_info["low"]} ~ {weather_info["high"]}\n' +\
+        f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
         f'紫外线: {weather_info["uv_level"]}\n' +\
-        f'空气污染扩散: {weather_info["air_pollution_level"]}\n' +\
-        f'温馨提示: {weather_info["notice"]}\n\n' +\
+        f'空气污染扩散: {weather_info["air_pollution_level"]}\n\n' +\
+        f'⭐⭐温馨提示⭐⭐\n' +\
+        f'紫外线: 【{weather_info["uv_notice"]}】\n' +\
+        f'过敏: 【{weather_info["allergy_notice"]}】\n' +\
+        f'运动: 【{weather_info["sport_notice"]}】\n' +\
+        f'穿衣: 【{weather_info["dress_notice"]}】\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
