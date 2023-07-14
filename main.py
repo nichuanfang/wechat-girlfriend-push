@@ -167,82 +167,79 @@ def get_lovelive_info():
         return None
 
 
-def get_weather_info(city_code=''):
-    """获取每日天气
+# def get_weather_info(city_code=''):
+#     """获取每日天气
 
-    Args:
-        city_code (str, optional): _description_. Defaults to ''.
+#     Args:
+#         city_code (str, optional): _description_. Defaults to ''.
 
-    Returns:
-        _type_: _description_
-    """
-    weather_url = f'http://t.weather.sojson.com/api/weather/city/{city_code}'
-    resp = requests.get(url=weather_url)
-    if resp.status_code == 200 and resp.json().get('status') == 200:
-        weatherJson = resp.json()
-        # 今日天气
-        today_weathers = weatherJson.get('data').get('forecast')
-        for today_weather in today_weathers:
-            if today_weather.get('ymd') == beijing_now.strftime('%Y-%m-%d'):
-                return today_weather
+#     Returns:
+#         _type_: _description_
+#     """
+#     weather_url = f'http://t.weather.sojson.com/api/weather/city/{city_code}'
+#     resp = requests.get(url=weather_url)
+#     if resp.status_code == 200 and resp.json().get('status') == 200:
+#         weatherJson = resp.json()
+#         # 今日天气
+#         today_weathers = weatherJson.get('data').get('forecast')
+#         for today_weather in today_weathers:
+#             if today_weather.get('ymd') == beijing_now.strftime('%Y-%m-%d'):
+#                 return today_weather
 
 
-def get_weather_assistant_info():
+def get_weather_info(city_code):
     '''
-    获取天气小助手信息    根据需要切换code 来更新小助手
-    101200102001  湖北省 武汉市 蔡甸区 蔡甸街道
-    101201701 湖北省 潜江市 城区
-    101221501 安徽省 六安市
-    101220101 安徽省 合肥市 
+    每天8点获取天气信息
     '''
     res = {}
-    url = 'http://www.weather.com.cn/weathern/101200102.shtml'
     headers = {
+        'Referer': f'http://www.weather.com.cn/weather1dn/{city_code}.shtml',
         'User-Agent': random.choice(google_chrome_ua_list)
     }
+    # 天气基本信息
+
+    # 毫秒级时间戳
+    t = (int(round(time() * 1000)))
+    url = "http://d1.weather.com.cn/dingzhi/{}.html?_={}".format(city_code, t)
+    response = get(url, headers=headers)
+    response.encoding = "utf-8"
+    response_data = response.text.split(";")[0].split("=")[-1]
+    response_json = eval(response_data)
+    weatherinfo = response_json["weatherinfo"]
+    # 天气
+    res['weather'] = weatherinfo["weather"]
+    # 最高气温
+    res['high'] = weatherinfo["temp"]
+    # 最低气温
+    res['low'] = weatherinfo["tempn"]
+    # 风力
+    res['fl'] = weatherinfo["ws"]
+    # 风向
+    res['fx'] = weatherinfo["wd"]
+
+    # 天气小助手
+    url = f'http://www.weather.com.cn/weathern/{city_code}.shtml'
     resp = requests.get(url=url, headers=headers)
-    try:
-        if resp.status_code == 200:
-            soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')
-            shzsSevenDays = soup.find_all('div', class_='shzsSevenDay')[
-                0].contents[1].contents
-            count = 0
-            for shzsSevenDay in shzsSevenDays:
-                if shzsSevenDay == '\n':
-                    continue
-                if shzsSevenDay.contents[0] == beijing_now.strftime('%m-%d'):
-                    break
-                count += 1
-            # 循环结束  count表示第几个元素是目标div
+    soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')
+    # 生活助手
+    lv = soup.find_all('div', class_='lv')[0]
 
-            # 定位目标div
-            lv = soup.find_all('div', class_='lv')[count]
-
-            # 紫外线
-            uv_level = lv.contents[1].contents[1].text.replace(
-                '\n', '')
-            res['uv_level'] = uv_level
-            # 穿衣
-            dress_level = lv.contents[5].contents[1].text.replace(
-                '\n', '')
-            res['dress_level'] = dress_level
-            # 空气污染扩散
-            air_pollution_level = lv.contents[11].contents[1].text.replace(
-                '\n', '')
-            res['air_pollution_level'] = air_pollution_level
-            # 温馨提示
-            res['notice'] = lv.contents[1].contents[3].text.replace(
-                '。', '')+'，'+lv.contents[5].contents[3].text.replace('。', '')
-            return res
-        else:
-            return res
-    except Exception as e:
-        print('获取天气小助手信息失败')
-        res['uv_level'] = '无'
-        res['dress_level'] = '无'
-        res['air_pollution_level'] = '无'
-        res['notice'] = '无'
-        return res
+    # 紫外线
+    uv_level = lv.contents[1].contents[1].text.replace(
+        '\n', '')
+    res['uv_level'] = uv_level
+    # 炎热/寒冷程度
+    dress_level = lv.contents[7].contents[1].text.replace(
+        '\n', '')
+    res['dress_level'] = dress_level
+    # 空气污染扩散
+    air_pollution_level = lv.contents[11].contents[1].text.replace(
+        '\n', '')
+    res['air_pollution_level'] = air_pollution_level
+    # 温馨提示
+    res['notice'] = '【'+lv.contents[1].contents[3].text.replace(
+        '。', '')+'，'+lv.contents[3].contents[3].text.replace('。', '')+'，'+lv.contents[7].contents[3].text.replace('。', '')+'】'
+    return res
 
 
 def diff_love_days():
@@ -355,8 +352,6 @@ def create_morning(love_days, birthday_days):
     morning_greet = get_morning_greet()
     # 天气信息
     weather_info: dict = get_weather_info(city_dict['蔡甸区'])  # type: ignore
-    # 获取天气助手信息
-    weather_assistant_info = get_weather_assistant_info()
     # 星座运势
     constellation_info = get_constellation_info('双鱼座')
     # 吉凶宜忌
@@ -381,13 +376,13 @@ def create_morning(love_days, birthday_days):
         f'法定节假日: 【{holiday_flag}】\n' +\
         f'节日: 【{festival_name}】\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
-        f'天气: {weather_info["type"]}\n' +\
-        f'气温: 【{weather_assistant_info["dress_level"]}】{weather_info["low"].replace("低温", "")} ~ {weather_info["high"].replace("高温", "")}\n' +\
+        f'天气: {weather_info["weather"]}\n' +\
+        f'气温: 【{weather_info["dress_level"]}】{weather_info["low"]} ~ {weather_info["high"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
-        f'紫外线: {weather_assistant_info["uv_level"]}\n' +\
-        f'空气污染扩散: {weather_assistant_info["air_pollution_level"]}\n' +\
-        f'温馨提示: {weather_assistant_info["notice"]}\n\n' +\
+        f'紫外线: {weather_info["uv_level"]}\n' +\
+        f'空气污染扩散: {weather_info["air_pollution_level"]}\n' +\
+        f'温馨提示: {weather_info["notice"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
