@@ -126,7 +126,11 @@ def get_morning_greet():
     '''
     print('获取早安问候语..')
 
-    # 生成10以内的随机数
+    # 如果是节日 节日祝福
+
+    # 如果是周末 周末快乐
+
+    # 其余的 生成10以内的随机数 获取早安语
     random_num = random.randint(0, len(morning_greets)-1)
     return morning_greets[random_num]
 
