@@ -17,8 +17,6 @@ import chinese_calendar
 from zhdate import ZhDate
 import json
 import urllib
-from urllib import parse
-from urllib import request
 from fake_useragent import UserAgent
 import random
 import sys
@@ -54,16 +52,28 @@ nongli_date = ZhDate.from_datetime(
 weekday = beijing_now.weekday()
 
 # 是否法定节假日
-
 holiday_flag = '否'
+# 节日名称(英文)
 festival_name = '无'
+
+# 节日中英文对照
+festival_dict = {
+    "New Year's Day": "元旦",
+    "spring_festival": "春节",
+    "Tomb-sweeping Day": "清明节",
+    "Labour Day": "劳动节",
+    "Dragon Boat Festival": "端午节",
+    "National Day": "国庆节",
+    "Mid-autumn Festival": "中秋节",
+    "Anti-Fascist 70th Day": "中国人民抗日战争暨世界反法西斯战争胜利70周年纪念日"
+}
 
 is_holi = is_holiday(beijing_now.date())
 if is_holi:
     holiday_flag = '是'
     holi_detail = chinese_calendar.get_holiday_detail(beijing_now.date())
     if holi_detail[0] and holi_detail[1]:
-        festival_name = holi_detail[1]
+        festival_name = festival_dict[holi_detail[1]]
 week_dict: dict[int, str] = {
     0: '一',
     1: '二',
@@ -126,9 +136,13 @@ def get_morning_greet():
     '''
     print('获取早安问候语..')
 
-    # 如果是节日 节日祝福
+    # 如果是节日
+    if festival_name != '无':
+        return f'{festival_name}快乐呀'
 
-    # 如果是周末 周末快乐
+    # 如果是周末
+    if weekday == 5 or weekday == 6:
+        return '周末快乐呀'
 
     # 其余的 生成10以内的随机数 获取早安语
     random_num = random.randint(0, len(morning_greets)-1)
@@ -164,7 +178,6 @@ def get_ciba_info():
         conentJson = resp.json()
         content = conentJson.get('content')
         note = conentJson.get('note')
-        # print(f"{content}\n{note}")
         return f"{content}\n{note}\n"
     else:
         print("没有获取到数据")
@@ -181,26 +194,6 @@ def get_lovelive_info():
     else:
         print('每日一句获取失败')
         return None
-
-
-# def get_weather_info(city_code=''):
-#     """获取每日天气
-
-#     Args:
-#         city_code (str, optional): _description_. Defaults to ''.
-
-#     Returns:
-#         _type_: _description_
-#     """
-#     weather_url = f'http://t.weather.sojson.com/api/weather/city/{city_code}'
-#     resp = requests.get(url=weather_url)
-#     if resp.status_code == 200 and resp.json().get('status') == 200:
-#         weatherJson = resp.json()
-#         # 今日天气
-#         today_weathers = weatherJson.get('data').get('forecast')
-#         for today_weather in today_weathers:
-#             if today_weather.get('ymd') == beijing_now.strftime('%Y-%m-%d'):
-#                 return today_weather
 
 
 def get_weather_info(city_code):
