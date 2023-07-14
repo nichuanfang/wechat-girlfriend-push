@@ -272,6 +272,7 @@ def diff_love_days():
     date1 = dt.datetime(
         beijing_now.year, beijing_now.month, beijing_now.day)
     love_day_ele = LOVE_DAY.split('-')
+    print(love_day_ele)
     date2 = dt.datetime(int(love_day_ele[0]), int(
         love_day_ele[1]), int(love_day_ele[2]))
     return (date1-date2).days
