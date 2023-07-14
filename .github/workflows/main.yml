@@ -36,7 +36,7 @@ jobs:
           CONSTELLATION: ${{vars.CONSTELLATION}}
           AREA: ${{vars.AREA}}
         run: |
-          python main.py LOVE_DAY BIRTHDAY CONSTELLATION AREA
+          python main.py $LOVE_DAY $BIRTHDAY $CONSTELLATION $AREA
 
       - name: Commit & Push changes
         uses: actions-js/push@master
