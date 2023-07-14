@@ -19,6 +19,8 @@ import json
 import urllib
 from urllib import parse
 from urllib import request
+from fake_useragent import UserAgent
+import random
 
 # 生成每日问候 (dist文件夹)
 
@@ -26,6 +28,8 @@ SHA_TZ = timezone(
     timedelta(hours=8),
     name='Asia/Shanghai',
 )
+
+google_chrome_ua_list: list = UserAgent().data_browsers['chrome']
 
 utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
@@ -192,8 +196,11 @@ def get_weather_assistant_info():
     101220101 安徽省 合肥市 
     '''
     res = {}
-    url = 'http://forecast.weather.com.cn/town/weathern/101200102001.shtml'
-    resp = requests.get(url=url)
+    url = 'http://www.weather.com.cn/weathern/101200102.shtml'
+    headers = {
+        'User-Agent': random.choice(google_chrome_ua_list)
+    }
+    resp = requests.get(url=url, headers=headers)
     try:
         if resp.status_code == 200:
             soup = BeautifulSoup(str(resp.content, 'utf-8'), 'lxml')

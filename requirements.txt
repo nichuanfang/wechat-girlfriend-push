@@ -3,3 +3,4 @@ chinesecalendar
 lxml==4.9.2
 Requests==2.31.0
 zhdate==0.1
+fake-useragent==1.1.3
