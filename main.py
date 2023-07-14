@@ -405,10 +405,11 @@ def create_morning(love_days, birthday_days):
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {weather_info["weather"]}\n' +\
         f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
+        f'舒适度: {weather_info["dress_level"]}\n' +\
         f'风向: {weather_info["fx"]}\n' +\
         f'风力: {weather_info["fl"]}\n' +\
-        f'紫外线: {weather_info["uv_level"]}\n' +\
         f'空气污染扩散: {weather_info["air_pollution_level"]}\n\n' +\
+        f'紫外线: {weather_info["uv_level"]}\n' +\
         f'⭐⭐温馨提示⭐⭐\n' +\
         f'紫外线: 【{weather_info["uv_notice"]}】\n' +\
         f'过敏: 【{weather_info["allergy_notice"]}】\n' +\
