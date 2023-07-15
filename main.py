@@ -148,7 +148,7 @@ def get_morning_greet():
     random_num = random.randint(0, len(morning_greets)-1)
     # 有50%的概率获取土味情话
     if random.randint(0, 1) == 1:
-        return get_lovelive_info()
+        return get_lovelive_info().replace('。', '')
     return morning_greets[random_num]
 
 # 获取格言信息
@@ -196,7 +196,7 @@ def get_lovelive_info():
         return resp.text + "\n"
     else:
         print('每日一句获取失败')
-        return None
+        return '早安啊'
 
 
 def get_weather_info(city_code):
