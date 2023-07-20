@@ -395,7 +395,7 @@ def create_morning(love_days, birthday_days):
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
 
     # 构建微信消息
-    msg = f'{morning_greet}~\n' + \
+    msg = f'{morning_greet}\n' + \
         f'今天是我们恋爱的第{love_days}天\n' +\
         f'距离亲爱的生日还有{birthday_days}天\n\n' +\
         f'⭐⭐今日简报⭐⭐\n' +\
