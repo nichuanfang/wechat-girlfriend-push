@@ -1,12 +1,15 @@
 #!/usr/local/bin/python3
 # coding=utf-8
 from calendar import c
+import re
 from time import time, localtime
 from bs4 import BeautifulSoup
 import lxml
 import requests
 import random
 from city_dict import city_dict
+from city_dict import longitude_latitude_dict
+import weather_dict
 import datetime as dt
 from datetime import datetime
 from datetime import timedelta
@@ -22,6 +25,8 @@ import random
 import sys
 
 # 获取环境变量
+# 手动设置环境变量
+# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', 'CAIYUN_TOKEN']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -31,6 +36,8 @@ BIRTHDAY = sys.argv[2]
 CONSTELLATION = sys.argv[3]
 # 女朋友目前所在地(中文)   只支持city_dict中收录的地区
 AREA = sys.argv[4]
+# 彩云密钥
+CAIYUN_TOKEN = sys.argv[5]
 
 # 生成每日问候 (dist文件夹)
 
@@ -265,6 +272,121 @@ def get_weather_info(city_code):
     return res
 
 
+def get_caiyun_weather_info(longitude_latitude):
+    '''
+    根据经纬度获取彩云天气
+    '''
+    res = {}
+    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/daily?dailysteps=1&alert=true"
+
+    MAX_RETRY = 3
+    retry_times = 0
+    while retry_times <= MAX_RETRY:
+        try:
+            response = get(url)
+            if response.ok:
+                response_json = response.json()
+                # 今日天气
+                daily = response_json['result']['daily']
+                alert = response_json['result']['alert']
+                # 天气
+                res['weather'] = weather_dict.weather[daily['skycon_08h_20h'][0]['value']]
+                # 最高气温
+                res['high'] = daily['temperature_08h_20h'][0]['max']
+                # 最低气温
+                res['low'] = daily['temperature_08h_20h'][0]['min']
+                # 降水概率
+                res['precipitation_probability'] = daily['precipitation_08h_20h'][0]['probability']
+                # 风力
+                res['fl'] = get_fl_desc(
+                    daily['wind_08h_20h'][0]['max']['speed'])
+                # 风向
+                res['fx'] = get_fx_desc(
+                    daily['wind_08h_20h'][0]['max']['direction'])
+                # 紫外线
+                res['uv_level'] = daily['life_index']['ultraviolet'][0]['desc']
+                # 舒适度
+                res['dress_level'] = daily['life_index']['comfort'][0]['desc']
+                #  天气预警
+                res['alert'] = alert['content'][0]['description']
+                return res
+        except Exception:
+            print("failed")
+            retry_times += 1
+            time.sleep(retry_times*retry_times)
+
+    print('获取彩云天气失败')
+    return None
+
+
+def get_fl_desc(fl):
+    """获取风力中文描述
+
+    Args:
+        fl (_type_): _description_
+    """
+    if fl >= 0 and fl < 1:
+        return '无风'
+    elif fl >= 1 and fl <= 5:
+        return '微风徐徐'
+    elif fl >= 6 and fl <= 11:
+        return '轻风'
+    elif fl >= 12 and fl <= 19:
+        return '树叶摇摆'
+    elif fl >= 20 and fl <= 28:
+        return '树枝摇动'
+    elif fl >= 29 and fl <= 38:
+        return '风力强劲'
+    elif fl >= 39 and fl <= 49:
+        return '风力狂飙'
+    elif fl >= 50 and fl <= 61:
+        return '风力超强'
+    elif fl >= 62 and fl <= 74:
+        return '狂风大作'
+    elif fl >= 75 and fl <= 88:
+        return '狂风呼啸'
+    elif fl >= 89 and fl <= 102:
+        return '暴风毁树'
+    elif fl >= 103 and fl <= 117:
+        return '暴风毁树'
+    elif fl >= 118 and fl <= 133:
+        return '飓风'
+    elif fl >= 134 and fl <= 149:
+        return '台风'
+    elif fl >= 150 and fl <= 166:
+        return '强台风'
+    elif fl >= 167 and fl <= 183:
+        return '强台风'
+    elif fl >= 184 and fl <= 201:
+        return '超强台风'
+    elif fl >= 202 and fl <= 220:
+        return '超强台风'
+
+
+def get_fx_desc(direction):
+    """获取风向中文描述
+
+    Args:
+        fx (_type_): _description_
+    """
+    if direction >= 0 and direction < 45:
+        return '北风'
+    elif direction >= 45 and direction < 90:
+        return '东北风'
+    elif direction >= 90 and direction < 135:
+        return '东风'
+    elif direction >= 135 and direction < 180:
+        return '东南风'
+    elif direction >= 180 and direction < 225:
+        return '南风'
+    elif direction >= 225 and direction < 270:
+        return '西南风'
+    elif direction >= 270 and direction < 315:
+        return '西风'
+    elif direction >= 315 and direction < 360:
+        return '西北风'
+
+
 def diff_love_days():
     '''
     计算恋爱天数
@@ -378,7 +500,13 @@ def create_morning(love_days, birthday_days):
     # 早安问候
     morning_greet = get_morning_greet()
     # 天气信息
-    weather_info: dict = get_weather_info(city_dict[AREA])  # type: ignore
+    # weather_info: dict = get_weather_info(city_dict[AREA])  # type: ignore
+    # 彩云天气信息
+    caiyun_weather_info = get_caiyun_weather_info(
+        longitude_latitude_dict[AREA])
+    if not caiyun_weather_info:
+        print('获取彩云天气失败')
+        sys.exit(1)
     # 星座运势
     constellation_info = get_constellation_info(CONSTELLATION)
     # 吉凶宜忌
@@ -403,18 +531,13 @@ def create_morning(love_days, birthday_days):
         f'法定节假日: {holiday_flag}\n' +\
         f'节日: {festival_name}\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
-        f'天气: {weather_info["weather"]}\n' +\
-        f'气温: {weather_info["low"]} ~ {weather_info["high"]}\n' +\
-        f'舒适度: {weather_info["dress_level"]}\n' +\
-        f'风向: {weather_info["fx"]}\n' +\
-        f'风力: {weather_info["fl"]}\n' +\
-        f'空气污染扩散: {weather_info["air_pollution_level"]}\n' +\
-        f'紫外线: {weather_info["uv_level"]}\n\n' +\
-        f'⭐⭐温馨提示⭐⭐\n' +\
-        f'紫外线: 【{weather_info["uv_notice"]}】\n' +\
-        f'过敏: 【{weather_info["allergy_notice"]}】\n' +\
-        f'运动: 【{weather_info["sport_notice"]}】\n' +\
-        f'穿衣: 【{weather_info["dress_notice"]}】\n\n' +\
+        f'天气: {caiyun_weather_info["weather"]}\n' +\
+        f'气温: {caiyun_weather_info["low"]}°C ~ {caiyun_weather_info["high"]}°C\n' +\
+        f'舒适度: {caiyun_weather_info["dress_level"]}\n' +\
+        f'风向: {caiyun_weather_info["fx"]}\n' +\
+        f'风力: {caiyun_weather_info["fl"]}\n' +\
+        f'降水概率: {caiyun_weather_info["precipitation_probability"]}%\n' +\
+        f'紫外线: {caiyun_weather_info["uv_level"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\

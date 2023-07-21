@@ -35,8 +35,9 @@ jobs:
           BIRTHDAY: ${{ vars.BIRTHDAY }}
           CONSTELLATION: ${{vars.CONSTELLATION}}
           AREA: ${{vars.AREA}}
+          CAIYUN_TOKEN: ${{ secrets.CAIYUN_TOKEN }}
         run: |
-          python main.py $LOVE_DAY $BIRTHDAY $CONSTELLATION $AREA
+          python main.py $LOVE_DAY $BIRTHDAY $CONSTELLATION $AREA $CAIYUN_TOKEN
 
       - name: Commit & Push changes
         uses: actions-js/push@master
