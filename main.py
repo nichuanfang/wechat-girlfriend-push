@@ -26,7 +26,7 @@ import sys
 
 # 获取环境变量
 # 手动设置环境变量
-# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', 'CAIYUN_TOKEN']
+sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '1a3uKp7MZj93Tvwk']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -303,6 +303,9 @@ def get_caiyun_weather_info(longitude_latitude):
                 # 风向
                 res['fx'] = get_fx_desc(
                     daily['wind_08h_20h'][0]['max']['direction'])
+                # 空气质量(国标)
+                res['aqi'] = get_aqi_desc(
+                    daily['air_quality']['aqi'][0]['avg']['chn'])
                 # 紫外线
                 res['uv_level'] = daily['life_index']['ultraviolet'][0]['desc']
                 # 舒适度
@@ -385,6 +388,26 @@ def get_fx_desc(direction):
         return '西风'
     elif direction >= 315 and direction < 360:
         return '西北风'
+
+
+def get_aqi_desc(aqi):
+    """获取空气质量中文描述
+
+    Args:
+        aqi (_type_): _description_
+    """
+    if aqi >= 0 and aqi <= 50:
+        return '优'
+    elif aqi >= 51 and aqi <= 100:
+        return '良'
+    elif aqi >= 101 and aqi <= 150:
+        return '轻度污染'
+    elif aqi >= 151 and aqi <= 200:
+        return '中度污染'
+    elif aqi >= 201 and aqi <= 300:
+        return '重度污染'
+    elif aqi >= 301:
+        return '严重污染'
 
 
 def diff_love_days():
@@ -533,10 +556,11 @@ def create_morning(love_days, birthday_days):
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {caiyun_weather_info["weather"]}\n' +\
         f'气温: {caiyun_weather_info["low"]}°C ~ {caiyun_weather_info["high"]}°C\n' +\
+        f'降水概率: {caiyun_weather_info["precipitation_probability"]}%\n' +\
         f'舒适度: {caiyun_weather_info["dress_level"]}\n' +\
         f'风向: {caiyun_weather_info["fx"]}\n' +\
         f'风力: {caiyun_weather_info["fl"]}\n' +\
-        f'降水概率: {caiyun_weather_info["precipitation_probability"]}%\n' +\
+        f'空气质量: {caiyun_weather_info["aqi"]}\n' +\
         f'紫外线: {caiyun_weather_info["uv_level"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
