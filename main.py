@@ -181,17 +181,17 @@ def get_morning_greet():
     '''
     print('获取早安问候语..')
 
+    kaomoji_random_num = random.randint(0, len(kaomoji_list)-1)
     # 如果是节日
     if festival_name != '无':
-        return f'{festival_name}快乐呀'
+        return f'{festival_name}快乐呀{kaomoji_list[kaomoji_random_num]}'
 
     # 如果是周末
     if weekday == 5 or weekday == 6:
-        return '周末快乐呀'
+        return f'周末快乐呀{kaomoji_list[kaomoji_random_num]}'
 
     # 其余的 生成10以内的随机数 获取早安语
     random_num = random.randint(0, len(morning_greets)-1)
-    kaomoji_random_num = random.randint(0, len(kaomoji_list)-1)
     # # 有50%的概率获取土味情话
     # if random.randint(0, 1) == 1:
     #     return get_lovelive_info().replace('。', '')
