@@ -329,19 +329,19 @@ def get_caiyun_weather_info(longitude_latitude):
                 daily = response_json['result']['daily']
                 alert = response_json['result']['alert']
                 # 天气
-                res['weather'] = weather_dict.weather[daily['skycon_08h_20h'][0]['value']]
+                res['weather'] = weather_dict.weather[daily['skycon'][0]['value']]
                 # 最高气温
-                res['high'] = daily['temperature_08h_20h'][0]['max']
+                res['high'] = daily['temperature'][0]['max']
                 # 最低气温
-                res['low'] = daily['temperature_08h_20h'][0]['min']
+                res['low'] = daily['temperature'][0]['min']
                 # 降水概率
-                res['precipitation_probability'] = daily['precipitation_08h_20h'][0]['probability']
+                res['precipitation_probability'] = daily['precipitation'][0]['probability']
                 # 风力
                 res['fl'] = get_fl_desc(
-                    daily['wind_08h_20h'][0]['max']['speed'])
+                    daily['wind'][0]['max']['speed'])
                 # 风向
                 res['fx'] = get_fx_desc(
-                    daily['wind_08h_20h'][0]['max']['direction'])
+                    daily['wind'][0]['max']['direction'])
                 # 空气质量(国标)
                 res['aqi'] = get_aqi_desc(
                     daily['air_quality']['aqi'][0]['avg']['chn'])
