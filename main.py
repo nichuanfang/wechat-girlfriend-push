@@ -26,7 +26,7 @@ import sys
 
 # 获取环境变量
 # 手动设置环境变量
-# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', 'CAIYUN_TOKEN']
+# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -316,7 +316,7 @@ def get_caiyun_weather_info(longitude_latitude):
     根据经纬度获取彩云天气
     '''
     res = {}
-    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/daily?dailysteps=1&alert=true"
+    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/weather?alert=true"
 
     MAX_RETRY = 3
     retry_times = 0
@@ -351,6 +351,8 @@ def get_caiyun_weather_info(longitude_latitude):
                 res['dress_level'] = daily['life_index']['comfort'][0]['desc']
                 #  天气预警
                 res['alert'] = alert['content'][0]['description']
+                # 温馨提示
+                res['notice'] = response_json['result']['hourly']['description']
                 return res
         except Exception:
             print("failed")
@@ -600,7 +602,8 @@ def create_morning(love_days, birthday_days):
         f'风向: {caiyun_weather_info["fx"]}\n' +\
         f'风力: {caiyun_weather_info["fl"]}\n' +\
         f'空气质量: {caiyun_weather_info["aqi"]}\n' +\
-        f'紫外线: {caiyun_weather_info["uv_level"]}\n\n' +\
+        f'紫外线: {caiyun_weather_info["uv_level"]}\n' +\
+        f'温馨提示: {caiyun_weather_info["notice"]}\n\n' +\
         f'⭐⭐双鱼座今日运势⭐⭐\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
