@@ -350,7 +350,7 @@ def get_caiyun_weather_info(longitude_latitude):
                 # 舒适度
                 res['dress_level'] = daily['life_index']['comfort'][0]['desc']
                 #  天气预警
-                res['alert'] = alert['content'][0]['description']
+                # res['alert'] = alert['content'][0]['description']
                 # 温馨提示
                 res['notice'] = response_json['result']['hourly']['description']
                 return res
