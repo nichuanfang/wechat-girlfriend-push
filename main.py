@@ -26,7 +26,7 @@ import sys
 
 # 获取环境变量
 # 手动设置环境变量
-# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '']
+sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '1a3uKp7MZj93Tvwk']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -451,6 +451,30 @@ def get_aqi_desc(aqi):
         return '严重污染'
 
 
+def get_history_info():
+    '''
+    获取历史上的今天
+    '''
+    result = []
+    headers = {
+        'Referer': f'https://zh.wikipedia.org/zh-cn/',
+        'User-Agent': random.choice(google_chrome_ua_list)
+    }
+    url = 'https://zh.wikipedia.org/zh-cn/Wikipedia:%E9%A6%96%E9%A1%B5'
+    res = get(url, headers)
+    res.encoding = "utf-8"
+    response_data = res.text
+    soup = BeautifulSoup(response_data, 'lxml')
+    histories = soup.find_all('dl')[0].text.replace(
+        '\n\n', '\n').replace('\n\n\n', '\n').split('\n')
+    for history in histories:
+        if history != '':
+            temp_list = list(history)
+            temp_list.insert(5, ' ')
+            result.append(''.join(temp_list))
+    return result
+
+
 def diff_love_days():
     '''
     计算恋爱天数
@@ -581,7 +605,8 @@ def create_morning(love_days, birthday_days):
     else:
         good = '无'
         evil = '无'
-
+    # 历史上的今天
+    # history_info = get_history_info()
     # 获取格式化日期
     date = beijing_now.strftime(
         '%Y-%m-%d')+' 星期'+week_dict[weekday]
