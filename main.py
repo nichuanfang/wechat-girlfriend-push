@@ -23,10 +23,9 @@ import urllib
 from fake_useragent import UserAgent
 import random
 import sys
-
 # 获取环境变量
 # 手动设置环境变量
-sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '1a3uKp7MZj93Tvwk']
+# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
