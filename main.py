@@ -55,31 +55,25 @@ beijing_now = utc_now.astimezone(SHA_TZ)
 nongli_date = ZhDate.from_datetime(
     datetime(beijing_now.year, beijing_now.month, beijing_now.day))
 
+# 获取24节气
+jieqis = chinese_calendar.get_solar_terms(datetime(beijing_now.year, 1, 1).date(),datetime(beijing_now.year+1, 1, 1).date())
+
+# 判断今天是不是某个节气
+jieqi = '无'
+for jieqi_date in jieqis:
+    if jieqi_date[0] == beijing_now.date():
+        jieqi = jieqi_date[1]
+        break
+
 weekday = beijing_now.weekday()
 
 # 是否法定节假日
 holiday_flag = '否'
-# 节日名称(英文)
-festival_name = '无'
-
-# 节日中英文对照
-festival_dict = {
-    "New Year's Day": "元旦",
-    "spring_festival": "春节",
-    "Tomb-sweeping Day": "清明节",
-    "Labour Day": "劳动节",
-    "Dragon Boat Festival": "端午节",
-    "National Day": "国庆节",
-    "Mid-autumn Festival": "中秋节",
-    "Anti-Fascist 70th Day": "中国人民抗日战争暨世界反法西斯战争胜利70周年纪念日"
-}
 
 is_holi = is_holiday(beijing_now.date())
 if is_holi:
     holiday_flag = '是'
     holi_detail = chinese_calendar.get_holiday_detail(beijing_now.date())
-    if holi_detail[0] and holi_detail[1]:
-        festival_name = festival_dict[holi_detail[1]]
 week_dict: dict[int, str] = {
     0: '一',
     1: '二',
@@ -173,7 +167,7 @@ constellation_dict = {
 }
 
 
-def get_morning_greet():
+def get_morning_greet(festival_name):
     '''
     生成每日问候语
     :return:
@@ -315,7 +309,7 @@ def get_caiyun_weather_info(longitude_latitude):
     根据经纬度获取彩云天气
     '''
     res = {}
-    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/weather?alert=true"
+    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/weather?alert=true&dailysteps=1&hourlysteps=12"
 
     MAX_RETRY = 3
     retry_times = 0
@@ -327,8 +321,13 @@ def get_caiyun_weather_info(longitude_latitude):
                 # 今日天气
                 daily = response_json['result']['daily']
                 alert = response_json['result']['alert']
+                # 实况
+                real_time = response_json['result']['realtime']
+                # 小时级别预告
+                hourly = response_json['result']['hourly']
+                
                 # 天气
-                res['weather'] = weather_dict.weather[daily['skycon'][0]['value']]
+                res['weather'] = weather_dict.weather[real_time['skycon']]
                 # 最高气温
                 res['high'] = daily['temperature'][0]['max']
                 # 最低气温
@@ -351,7 +350,7 @@ def get_caiyun_weather_info(longitude_latitude):
                 #  天气预警
                 # res['alert'] = alert['content'][0]['description']
                 # 温馨提示
-                res['notice'] = response_json['result']['hourly']['description']
+                res['notice'] = hourly['description']
                 return res
         except Exception:
             print("failed")
@@ -454,24 +453,37 @@ def get_history_info():
     '''
     获取历史上的今天
     '''
-    result = []
+    result = {}
     headers = {
-        'Referer': f'https://zh.wikipedia.org/zh-cn/',
+        'Host': 'baike.baidu.com',
+        'Referer': f'https://baike.baidu.com/calendar/',
+        'Sec-Ch-Ua-Platform': 'Windows',
         'User-Agent': random.choice(google_chrome_ua_list)
     }
-    url = 'https://zh.wikipedia.org/zh-cn/Wikipedia:%E9%A6%96%E9%A1%B5'
+    month_fmt = beijing_now.strftime("%m")
+    month_day_fmt = beijing_now.strftime("%m%d")
+    # 获取时间戳
+    t = (int(round(time() * 1000)))
+    # 获取月份
+    url = f'https://baike.baidu.com/cms/home/eventsOnHistory/{beijing_now.strftime("%m")}.json?_={t}'
     res = get(url, headers)
     res.encoding = "utf-8"
-    response_data = res.text
-    soup = BeautifulSoup(response_data, 'lxml')
-    histories = soup.find_all('dl')[0].text.replace(
-        '\n\n', '\n').replace('\n\n\n', '\n').split('\n')
-    for history in histories:
-        if history != '':
-            temp_list = list(history)
-            temp_list.insert(5, ' ')
-            result.append(''.join(temp_list))
+    res_json = res.json()
+    days = res_json[month_fmt][month_day_fmt]
+    # 获取cover为true的
+    for day in days:
+        if day['cover'] == True:
+            # 去处字符串<a>链接
+            result['title'] = re.sub(r'<a.*?>|</a>', '',
+                                     day['title'])
+            result['desc'] = day['desc']
+            if day['festival'] == '' or day['festival'] == None:
+                result['festival'] = '无'
+            else:
+                result['festival'] = day['festival']
+            return result
     return result
+
 
 
 def diff_love_days():
@@ -584,8 +596,14 @@ def get_good_and_evil():
 
 
 def create_morning(love_days, birthday_days):
+    icons = ['✨✨', '🌟🌟', '⭐⭐','🌼🌼','🐇🐇','🍀🍀','🌻🌻','🌸🌸']
+    # 随机选择一个
+    icon = random.choice(icons)
+    
+    # 历史上的今天
+    history_info = get_history_info()
     # 早安问候
-    morning_greet = get_morning_greet()
+    morning_greet = get_morning_greet(history_info['festival'])
     # 天气信息
     # weather_info: dict = get_weather_info(city_dict[AREA])  # type: ignore
     # 彩云天气信息
@@ -604,20 +622,22 @@ def create_morning(love_days, birthday_days):
     else:
         good = '无'
         evil = '无'
-    # 历史上的今天
-    # history_info = get_history_info()
     # 获取格式化日期
-    date = beijing_now.strftime(
-        '%Y-%m-%d')+' 星期'+week_dict[weekday]
+    if jieqi == '无':
+        date = beijing_now.strftime(
+            '%Y-%m-%d')+' 星期'+week_dict[weekday]
+    else:
+        date = beijing_now.strftime(
+            '%Y-%m-%d')+' 星期'+week_dict[weekday] + ' ' + jieqi
 
     # 构建微信消息
     msg = f'{morning_greet}\n' + \
         f'今天是我们恋爱的第{love_days}天\n' +\
         f'距离亲爱的生日还有{birthday_days}天\n\n' +\
-        f'⭐⭐今日简报⭐⭐\n' +\
+        f'{icon}今日简报{icon}\n' +\
         f'{date}\n' +\
         f'法定节假日: {holiday_flag}\n' +\
-        f'节日: {festival_name}\n' +\
+        f'节日: {history_info["festival"]}\n' +\
         f'地区: 武汉市 蔡甸区\n' +\
         f'天气: {caiyun_weather_info["weather"]}\n' +\
         f'气温: {caiyun_weather_info["low"]}°C ~ {caiyun_weather_info["high"]}°C\n' +\
@@ -628,16 +648,18 @@ def create_morning(love_days, birthday_days):
         f'空气质量: {caiyun_weather_info["aqi"]}\n' +\
         f'紫外线: {caiyun_weather_info["uv_level"]}\n' +\
         f'温馨提示: {caiyun_weather_info["notice"]}\n\n' +\
-        f'⭐⭐双鱼座今日运势⭐⭐\n' +\
+        f'{icon}双鱼座今日运势{icon}\n' +\
         f'综合运势: {constellation_info["comprehensive_stars_icon"]}\n' +\
         f'事业学业: {constellation_info["study_stars_icon"]}\n' +\
         f'幸运数字: {constellation_info["lucky_num"]}\n' +\
         f'幸运颜色: {constellation_info["lucky_color"]}\n' +\
         f'短评: {constellation_info["short_comment"]}\n\n' +\
-        f'⭐⭐吉凶宜忌⭐⭐\n' +\
+        f'{icon}吉凶宜忌{icon}\n' +\
         f'{nongli_date}\n' +\
         f'宜: 【{good}】\n' +\
         f'忌: 【{evil}】\n\n' +\
+        f'{icon}历史上的今天{icon}\n' +\
+        f'{history_info["title"]}\n\n' +\
         f'{get_ciba_info()}\n\n'
 
     with open('./dist/morning.txt', 'w+', encoding='utf-8') as f:
