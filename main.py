@@ -25,7 +25,7 @@ import random
 import sys
 # 获取环境变量
 # 手动设置环境变量
-# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '']
+sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '1a3uKp7MZj93Tvwk']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -56,7 +56,8 @@ nongli_date = ZhDate.from_datetime(
     datetime(beijing_now.year, beijing_now.month, beijing_now.day))
 
 # 获取24节气
-jieqis = chinese_calendar.get_solar_terms(datetime(beijing_now.year, 1, 1).date(),datetime(beijing_now.year+1, 1, 1).date())
+jieqis = chinese_calendar.get_solar_terms(datetime(
+    beijing_now.year, 1, 1).date(), datetime(beijing_now.year+1, 1, 1).date())
 
 # 判断今天是不是某个节气
 jieqi = '无'
@@ -309,7 +310,7 @@ def get_caiyun_weather_info(longitude_latitude):
     根据经纬度获取彩云天气
     '''
     res = {}
-    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/weather?alert=true&dailysteps=1&hourlysteps=12"
+    url = f"https://api.caiyunapp.com/v2.6/{CAIYUN_TOKEN}/{longitude_latitude}/weather?alert=true&hourlysteps=15"
 
     MAX_RETRY = 3
     retry_times = 0
@@ -325,7 +326,7 @@ def get_caiyun_weather_info(longitude_latitude):
                 real_time = response_json['result']['realtime']
                 # 小时级别预告
                 hourly = response_json['result']['hourly']
-                
+
                 # 天气
                 res['weather'] = weather_dict.weather[real_time['skycon']]
                 # 最高气温
@@ -485,7 +486,6 @@ def get_history_info():
     return result
 
 
-
 def diff_love_days():
     '''
     计算恋爱天数
@@ -596,10 +596,10 @@ def get_good_and_evil():
 
 
 def create_morning(love_days, birthday_days):
-    icons = ['✨✨', '🌟🌟', '⭐⭐','🌼🌼','🐇🐇','🍀🍀','🌻🌻','🌸🌸']
+    icons = ['✨✨', '🌟🌟', '⭐⭐', '🌼🌼      ', ' 🐇 🐇 ', ' 🍀 🍀 ', ' 🌻🌻 ', '🌸🌸']
     # 随机选择一个
     icon = random.choice(icons)
-    
+
     # 历史上的今天
     history_info = get_history_info()
     # 早安问候
