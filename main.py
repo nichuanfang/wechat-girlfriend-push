@@ -25,7 +25,7 @@ import random
 import sys
 # 获取环境变量
 # 手动设置环境变量
-# sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '']
+sys.argv = ['main.py', '2023-03-19', '3.19', '双鱼座', '蔡甸区', '1a3uKp7MZj93Tvwk']
 
 # 告白日 形如xxxx-xx-xx
 LOVE_DAY = sys.argv[1]
@@ -370,39 +370,39 @@ def get_fl_desc(fl):
     """
     if fl >= 0 and fl < 1:
         return '无风'
-    elif fl >= 1 and fl <= 5:
+    elif fl >= 1 and fl < 6:
         return '微风徐徐'
-    elif fl >= 6 and fl <= 11:
+    elif fl >= 6 and fl < 12:
         return '轻风'
-    elif fl >= 12 and fl <= 19:
+    elif fl >= 12 and fl < 20:
         return '树叶摇摆'
-    elif fl >= 20 and fl <= 28:
+    elif fl >= 20 and fl < 29:
         return '树枝摇动'
-    elif fl >= 29 and fl <= 38:
+    elif fl >= 29 and fl < 39:
         return '风力强劲'
-    elif fl >= 39 and fl <= 49:
+    elif fl >= 39 and fl < 50:
         return '风力狂飙'
-    elif fl >= 50 and fl <= 61:
+    elif fl >= 50 and fl < 62:
         return '风力超强'
-    elif fl >= 62 and fl <= 74:
+    elif fl >= 62 and fl < 75:
         return '狂风大作'
-    elif fl >= 75 and fl <= 88:
+    elif fl >= 75 and fl < 89:
         return '狂风呼啸'
-    elif fl >= 89 and fl <= 102:
+    elif fl >= 89 and fl < 103:
         return '暴风毁树'
-    elif fl >= 103 and fl <= 117:
+    elif fl >= 103 and fl < 118:
         return '暴风毁树'
-    elif fl >= 118 and fl <= 133:
+    elif fl >= 118 and fl < 134:
         return '飓风'
-    elif fl >= 134 and fl <= 149:
+    elif fl >= 134 and fl < 150:
         return '台风'
-    elif fl >= 150 and fl <= 166:
+    elif fl >= 150 and fl < 167:
         return '强台风'
-    elif fl >= 167 and fl <= 183:
+    elif fl >= 167 and fl < 184:
         return '强台风'
-    elif fl >= 184 and fl <= 201:
+    elif fl >= 184 and fl < 202:
         return '超强台风'
-    elif fl >= 202 and fl <= 220:
+    elif fl >= 202 and fl < 221:
         return '超强台风'
 
 
